@@ -1,9 +1,9 @@
 const express = require("express");
+const { register } = require("../controllers/auth.controller");
 
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  res.send("Radhe Radhe");
-});
+// ! Register API
+router.post("/register", register);
 
 module.exports = router;

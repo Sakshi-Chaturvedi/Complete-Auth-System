@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 
 const userSchema = new mongoose.Schema({
-  name: {
+  uname: {
     type: String,
     trim: true,
     required: true,
@@ -15,9 +16,9 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
-    minlength: [8, "Password must have atleast 8 characters."],
-    maxlength: [15, "Password can't be have more than 15 characters."],
+    trim: true,
+    minLength: [8, "Password should contain at least 8 characters."],
+    maxLength: [12, "Password can not have more than 12 characters."],
     select: false,
   },
   phone: {
@@ -28,7 +29,7 @@ const userSchema = new mongoose.Schema({
   },
   accountVerified: { type: Boolean, default: false },
   verificationCode: {
-    type: Number,
+    type: String,
   },
   verificationCodeExpire: {
     type: Date,
@@ -45,13 +46,12 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-userSchema.pre("save", async function (next) {
+userSchema.pre("save", async function () {
   if (!this.isModified("password")) {
-    return next();
+    return;
   }
 
   this.password = await bcrypt.hash(this.password, 10);
-  next();
 });
 
 userSchema.methods.comparePassword = async function (enteredPassword) {
@@ -59,20 +59,15 @@ userSchema.methods.comparePassword = async function (enteredPassword) {
 };
 
 userSchema.methods.generateVerificationCode = function () {
-  function generateRandomFiveDigitNumber() {
-    const firstDigit = Math.floor(Math.random() * 9) + 1;
-    const remainingDigits = Math.floor(Math.random() * 10000)
-      .toString()
-      .padStart(4, 0);
+  const firstDigit = Math.floor(Math.random() * 9) + 1;
+  const remainingDigits = Math.floor(Math.random() * 10000)
+    .toString()
+    .padStart(4, "0");
 
-    return parseInt(firstDigit + remainingDigits);
-  }
-
-  const verificationCode = generateRandomFiveDigitNumber();
+  const verificationCode = firstDigit + remainingDigits;
 
   this.verificationCode = verificationCode;
-
-  this.verificationCodeExpire = Date.now() + 10 * 60 * 1000;
+  this.verificationCodeExpire = new Date(Date.now() + 10 * 60 * 1000);
 
   return verificationCode;
 };
