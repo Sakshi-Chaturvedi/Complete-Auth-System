@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
 
-const sendEmail = async (email, subject, message) => {
+const sendEmail = async ({ email, subject, message }) => {
   try {
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
@@ -12,14 +12,12 @@ const sendEmail = async (email, subject, message) => {
       },
     });
 
-    const options = {
+    await transporter.sendMail({
       from: `CodeByte <${process.env.SMTP_MAIL}>`,
       to: email,
-      subject: subject,
+      subject,
       html: message,
-    };
-
-    await transporter.sendMail(options);
+    });
   } catch (error) {
     console.error("Email send error:", error);
     throw new Error("Email could not be sent");

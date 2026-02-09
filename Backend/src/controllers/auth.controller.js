@@ -1,5 +1,5 @@
 const catchAsyncError = require("../Middlewares/catchAsyncError");
-const ErrorHandler = require("../Middlewares/error");
+const { ErrorHandler } = require("../Middlewares/error");
 const user = require("../models/user.model");
 const sendVerificationCodeService = require("../utils/sendVerificationCodeService");
 
@@ -9,9 +9,9 @@ const validatePhone = (phone) => {
 };
 
 const register = catchAsyncError(async (req, res, next) => {
-  const { uname, email, password, phone, verificationMethod } = req.body;
+  const { username, email, password, phone, verificationMethod } = req.body;
 
-  if (!uname || !email || !password || !phone || !verificationMethod) {
+  if (!username || !email || !password || !phone || !verificationMethod) {
     return next(new ErrorHandler("All fields are required.", 400));
   }
 
@@ -40,14 +40,18 @@ const register = catchAsyncError(async (req, res, next) => {
   }
 
   const newUser = await user.create({
-    uname,
+    username,
     email,
     password,
     phone,
   });
 
   const OTP = await newUser.generateVerificationCode();
+  console.log("REQ BODY BEFORE SAVE:", req.body);
+
   await newUser.save();
+
+  // console.log("EMAIL FROM REQUEST:", req.body.email);
 
   await sendVerificationCodeService(verificationMethod, OTP, email, phone);
 
@@ -59,5 +63,10 @@ const register = catchAsyncError(async (req, res, next) => {
         : "Verification code sent to your phone",
   });
 });
+
+
+
+// ! OTP Verification Function
+
 
 module.exports = { register };

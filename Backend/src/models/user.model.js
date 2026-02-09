@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
 const userSchema = new mongoose.Schema({
-  uname: {
+  username: {
     type: String,
     trim: true,
     required: true,
@@ -23,9 +23,8 @@ const userSchema = new mongoose.Schema({
   },
   phone: {
     type: String,
-    required: true,
     trim: true,
-    unique: true,
+    required: true,
   },
   accountVerified: { type: Boolean, default: false },
   verificationCode: {
