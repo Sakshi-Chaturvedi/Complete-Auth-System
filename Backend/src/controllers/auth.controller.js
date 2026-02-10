@@ -52,8 +52,6 @@ const register = catchAsyncError(async (req, res, next) => {
 
   await newUser.save();
 
-
-
   await sendVerificationCodeService(verificationMethod, OTP, email, phone);
 
   return res.status(201).json({
@@ -112,4 +110,54 @@ const verifyOTP = catchAsyncError(async (req, res, next) => {
   sendToken(users, 200, "Account Verified", res);
 });
 
-module.exports = { register, verifyOTP };
+// ! Login User Function
+const login = catchAsyncError(async (req, res, next) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return next(new ErrorHandler("Email & Password are required.", 400));
+  }
+
+  const _user = await user
+    .findOne({
+      email,
+      accountVerified: true,
+    })
+    .select("+password");
+
+  if (!_user) {
+    return next(new ErrorHandler("User not Found.", 404));
+  }
+
+  const isPasswordMatched = await _user.comparePassword(password);
+
+  if (!isPasswordMatched) {
+    return next(new ErrorHandler("Incorrect Email or Password.", 400));
+  }
+
+  sendToken(_user, 200, "Logged In Successfully", res);
+});
+
+// ! Logout User Function
+const logout = catchAsyncError(async (req, res, next) => {
+  res
+    .status(200)
+    .cookie("token", "", { expires: new Date(Date.now()), httpOnly: true })
+    .json({
+      success: true,
+      message: "User logged Out Successfully.",
+    });
+});
+
+// ! User Profile Function
+const profile = catchAsyncError(async (req, res, next) => {
+  const user = req.user;
+
+  res.status(200).json({
+    success: true,
+    message: "User Profile Fetched Successfully.",
+    user
+  });
+});
+
+module.exports = { register, verifyOTP, login, logout, profile };
