@@ -1,10 +1,12 @@
 const express = require("express");
-const { register } = require("../controllers/auth.controller");
+const { register, verifyOTP } = require("../controllers/auth.controller");
 
 const router = express.Router();
 
 // ! Register API
 router.post("/register", register);
 
-module.exports = router;
+// ! Verify - OTP API
+router.post("/verifyUser", verifyOTP);
 
+module.exports = router;

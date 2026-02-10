@@ -1,6 +1,7 @@
 const catchAsyncError = require("../Middlewares/catchAsyncError");
 const { ErrorHandler } = require("../Middlewares/error");
 const user = require("../models/user.model");
+const sendToken = require("../utils/sendToken");
 const sendVerificationCodeService = require("../utils/sendVerificationCodeService");
 
 const validatePhone = (phone) => {
@@ -51,7 +52,7 @@ const register = catchAsyncError(async (req, res, next) => {
 
   await newUser.save();
 
-  // console.log("EMAIL FROM REQUEST:", req.body.email);
+
 
   await sendVerificationCodeService(verificationMethod, OTP, email, phone);
 
@@ -64,9 +65,51 @@ const register = catchAsyncError(async (req, res, next) => {
   });
 });
 
-
-
 // ! OTP Verification Function
 
+const verifyOTP = catchAsyncError(async (req, res, next) => {
+  const { email, otp, phone } = req.body;
 
-module.exports = { register };
+  if (phone && !validatePhone(phone)) {
+    return next(new ErrorHandler("Invalid Phone Number.", 400));
+  }
+
+  const userEntries = await user.find({
+    accountVerified: false,
+    $or: [email ? { email } : null, phone ? { phone } : null].filter(Boolean),
+  });
+
+  if (!userEntries || userEntries.length === 0) {
+    return next(new ErrorHandler("User not Found.", 404));
+  }
+
+  let users = userEntries[0];
+
+  if (userEntries.length > 1) {
+    await user.deleteMany({
+      _id: { $ne: users._id },
+      $or: [
+        { phone, accountVerified: false },
+        { email, accountVerified: false },
+      ],
+    });
+  }
+
+  if (String(otp) !== String(users.verificationCode)) {
+    return next(new ErrorHandler("Invalid OTP.", 400));
+  }
+
+  if (Date.now() > new Date(user.verificationCodeExpire).getTime()) {
+    return next(new ErrorHandler("OTP has been expired.", 400));
+  }
+
+  users.verificationCode = null;
+  users.accountVerified = true;
+  users.verificationCodeExpire = null;
+
+  await users.save();
+
+  sendToken(users, 200, "Account Verified", res);
+});
+
+module.exports = { register, verifyOTP };

@@ -5,8 +5,6 @@ const client = require("twilio")(
   process.env.TWILIO_AUTH_TOKEN,
 );
 
-console.log("SID:", process.env.TTWILIO_SID);
-console.log("TOKEN:", process.env.TWILIO_AUTH_TOKEN);
 
 
 const sendVerificationCodeService = async (
@@ -47,11 +45,7 @@ const sendVerificationCodeService = async (
 
     const code = verificationCode.toString().split("").join(" ");
 
-    console.log("verificationCode =", verificationCode);
-
-
-    console.log("Yaha tk chl gya");
-
+    
     await client.calls.create({
       twiml: `
         <Response>
@@ -63,8 +57,7 @@ const sendVerificationCodeService = async (
       from: process.env.TWILIO_PHONE_NUMBER,
       to: formattedPhone,
     });
-
-    console.log("Yaha bhi chl gya");
+ 
 
     return {
       success: true,
