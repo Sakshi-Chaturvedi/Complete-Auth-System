@@ -5,7 +5,10 @@ const {
   login,
   logout,
   profile,
+  forgotPassword,
+  resetPassword,
 } = require("../controllers/auth.controller");
+const isAuthenticatedUser = require("../Middlewares/auth");
 
 const router = express.Router();
 
@@ -19,9 +22,15 @@ router.post("/verifyUser", verifyOTP);
 router.post("/login", login);
 
 // ! Logout User API
-router.get("/logout", logout);
+router.get("/logout", isAuthenticatedUser, logout);
 
 // ! User Profile API
-router.get("/profile", profile);
+router.get("/profile", isAuthenticatedUser, profile);
+
+// ! Forgot Password API
+router.post("/password/forgot", forgotPassword);
+
+// ! Reset Password API
+router.put("/password/reset/:token", resetPassword);
 
 module.exports = router;

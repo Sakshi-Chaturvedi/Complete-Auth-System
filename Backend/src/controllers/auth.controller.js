@@ -1,8 +1,10 @@
 const catchAsyncError = require("../Middlewares/catchAsyncError");
 const { ErrorHandler } = require("../Middlewares/error");
 const user = require("../models/user.model");
+const sendEmail = require("../utils/sendEmail");
 const sendToken = require("../utils/sendToken");
 const sendVerificationCodeService = require("../utils/sendVerificationCodeService");
+const crypto = require("crypto");
 
 const validatePhone = (phone) => {
   const phoneRegex = /^(?:\+91)?[6-9]\d{9}$/;
@@ -151,13 +153,110 @@ const logout = catchAsyncError(async (req, res, next) => {
 
 // ! User Profile Function
 const profile = catchAsyncError(async (req, res, next) => {
-  const user = req.user;
+  const pUser = req.pUser;
 
   res.status(200).json({
     success: true,
     message: "User Profile Fetched Successfully.",
-    user
+    pUser,
   });
 });
 
-module.exports = { register, verifyOTP, login, logout, profile };
+// ! Forgot Password Function
+const forgotPassword = catchAsyncError(async (req, res, next) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return next(new ErrorHandler("Email is required.", 400));
+  }
+
+  const User = await user.findOne({ email, accountVerified: true });
+
+  if (!User) {
+    return next(new ErrorHandler("User not Found.", 404));
+  }
+
+  const resetToken = User.generateResetPasswordToken();
+
+  await User.save({ validateBeforeSave: false });
+
+  const resetPasswordURL = `${process.env.FrontEnd_URL}/password/reset/${resetToken}`;
+
+  const generateMsg = `Your Reset Password Token is:- \n\n ${resetPasswordURL} \n\n If you have not requested this email then please ignore it.`;
+
+  try {
+    sendEmail({
+      email,
+      subject: "MERN AUTHENTICATION APP RESET PASSWORD",
+      message: generateMsg,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Email sent to ${email} successfully.`,
+    });
+  } catch (error) {
+    User.resetPasswordToken = undefined;
+    User.resetPasswordExpire = undefined;
+
+    await User.save({ validateBeforeSave: false });
+
+    return next(
+      new ErrorHandler(
+        error.message ? error.message : "Cannot send reset password token.",
+        500,
+      ),
+    );
+  }
+});
+
+// ! Reset Password Function
+const resetPassword = catchAsyncError(async (req, res, next) => {
+  const { token } = req.params;
+
+  if (!token) {
+    return next(new ErrorHandler("Unauthorized Request.", 400));
+  }
+
+  const resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
+
+  const r_user = await user.findOne({
+    resetPasswordToken,
+    resetPasswordExpire: { $gt: Date.now() },
+  });
+
+  if (!r_user) {
+    return next(
+      new ErrorHandler(
+        "Reset password token is invalid or has been expired.",
+        400,
+      ),
+    );
+  }
+
+  if (req.body.password !== req.body.confirmPassword) {
+    return next(
+      new ErrorHandler("Password & confirm password do not match.", 400),
+    );
+  }
+
+  r_user.password = req.body.password;
+  r_user.resetPasswordToken = undefined;
+  r_user.resetPasswordExpire = undefined;
+  await r_user.save();
+
+  sendToken(r_user, 200, "Reset Password Successfully.", res);
+});
+
+module.exports = {
+  register,
+  verifyOTP,
+  login,
+  logout,
+  profile,
+  forgotPassword,
+  resetPassword,
+};
