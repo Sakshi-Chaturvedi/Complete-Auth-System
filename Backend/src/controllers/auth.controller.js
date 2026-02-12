@@ -22,13 +22,13 @@ const register = catchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler("Invalid phone number.", 400));
   }
 
-  const existingUser = await user.find({
+  const existingUser = await user.findOne({
     $or: [{ email }, { phone }],
     accountVerified: false,
   });
 
-  if (existingUser.length > 0) {
-    return next(new ErrorHandler("User already exists.", 400));
+  if (existingUser) {
+    return next(new ErrorHandler("Email or Phone already exists.", 400));
   }
 
   const attempts = await user.countDocuments({

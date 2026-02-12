@@ -10,11 +10,12 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: [process.env.FrontEnd_URL],
+    origin: process.env.FRONTEND_URL,
     methods: ["GET", "POST", "DELETE", "PUT"],
     credentials: true,
-  }),
+  })
 );
+
 
 app.use(cookieParser());
 
