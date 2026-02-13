@@ -17,7 +17,7 @@ const Register = () => {
   const handleRegister = async (data) => {
     data.phone = `+91${data.phone}`;
     await axios
-      .post("http://localhost:3000/auth/register", data, {
+      .post("https://full-stack-auth-system-h2mm.onrender.com/auth/register", data, {
         withCredentials: true,
         headers: { "Content-Type": "application/json" },
       })

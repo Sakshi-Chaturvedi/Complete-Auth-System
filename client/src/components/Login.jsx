@@ -16,7 +16,7 @@ const Login = () => {
   } = useForm();
   const handleLogin = async (data) => {
     await axios
-      .post("http://localhost:3000/auth/login", data, {
+      .post("https://full-stack-auth-system-h2mm.onrender.com/auth/login", data, {
         withCredentials: true,
         headers: {
           "Content-Type": "application/json",

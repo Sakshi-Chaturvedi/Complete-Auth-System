@@ -36,7 +36,7 @@ const OtpVerification = () => {
       phone,
     };
     await axios
-      .post("http://localhost:3000/auth/verifyUser", data, {
+      .post("https://full-stack-auth-system-h2mm.onrender.com/auth/verifyUser", data, {
         withCredentials: true,
         headers: { "Content-Type": "application/json" },
       })

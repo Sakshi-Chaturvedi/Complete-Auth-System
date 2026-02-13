@@ -17,7 +17,7 @@ const App = () => {
   useEffect(() => {
     const getUser = async () => {
       await axios
-        .get("http://localhost:3000/auth/profile", { withCredentials: true })
+        .get("https://full-stack-auth-system-h2mm.onrender.com/auth/profile", { withCredentials: true })
         .then((res) => {
           setUser(res.data.user);
           setIsAuthenticated(true);

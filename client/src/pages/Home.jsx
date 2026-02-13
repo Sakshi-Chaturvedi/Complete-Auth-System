@@ -14,7 +14,7 @@ const Home = () => {
 
   const logout = async () => {
     await axios
-      .get("http://localhost:3000/auth/logout", {
+      .get("https://full-stack-auth-system-h2mm.onrender.com/auth/logout", {
         withCredentials: true,
       })
       .then((res) => {

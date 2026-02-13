@@ -15,7 +15,7 @@ const ResetPassword = () => {
     e.preventDefault();
     await axios
       .put(
-        `http://localhost:3000/auth/password/reset/${token}`,
+        `https://full-stack-auth-system-h2mm.onrender.com/auth/password/reset/${token}`,
         { password, confirmPassword },
         {
           withCredentials: true,

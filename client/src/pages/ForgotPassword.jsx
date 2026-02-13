@@ -12,7 +12,7 @@ const ForgotPassword = () => {
     e.preventDefault();
     await axios
       .post(
-        "http://localhost:3000/auth/password/forgot",
+        "https://full-stack-auth-system-h2mm.onrender.com/auth/password/forgot",
         { email },
         {
           withCredentials: true,
