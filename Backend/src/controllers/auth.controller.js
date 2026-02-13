@@ -142,6 +142,7 @@ const login = catchAsyncError(async (req, res, next) => {
 
 // ! Logout User Function
 const logout = catchAsyncError(async (req, res, next) => {
+  console.log("TOKEN 👉", req.cookies.token);
   res
     .status(200)
     .cookie("token", "", {

@@ -22,7 +22,7 @@ router.post("/verifyUser", verifyOTP);
 router.post("/login", login);
 
 // ! Logout User API
-router.get("/logout", isAuthenticatedUser, logout);
+router.get("/logout", logout);
 
 // ! User Profile API
 router.get("/profile", isAuthenticatedUser, profile);
