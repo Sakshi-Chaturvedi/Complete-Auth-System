@@ -170,6 +170,8 @@ const profile = catchAsyncError(async (req, res, next) => {
 
 // ! Forgot Password Function
 const forgotPassword = catchAsyncError(async (req, res, next) => {
+  console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
+
   const { email } = req.body;
 
   if (!email) {
